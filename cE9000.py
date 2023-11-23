@@ -19,7 +19,7 @@ def cE9000(spins, interactionDistance=1):
                 energy += (-1) * spin * neighbors_sum
     return energy
 
-def cE9000_2D(spins, interactionDistance=1):
+def cE9000_2D(spins, interactionDistance=1): # einfach weil uns ihre lösung nicht gefallen hat!
     size = spins.shape[0]
     energy = 0
     for i in range(size):
