@@ -1,6 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.animation import FuncAnimation
+
+# global array of spin states. Used for visualization at the end
+e = []
+count = 0
 
 def initialize_model(n):
     return np.random.choice([1, -1], size=(n, n, n))
@@ -42,7 +47,7 @@ def mkCoolingScheduleLin(T0,K,iter):
 
 #################
 
-size = 10
+size = 3
 spins = initialize_model(size)
 print("Energie des Anfangszustands: ", ce9000(spins))
 
@@ -74,24 +79,43 @@ for k in np.arange(1,iter):
         E[k] = E[k-1] + dE
     else:
         E[k] = E[k-1]
+    if (count % (iter / 20) == 0):
+        e.append(np.copy(spins))
+    count += 1
 
 ################
 
 print("Energie des Endzustands: ", ce9000(spins))
+y = 0
+for x in e:
+    print('state', y)
+    print(x)
+    print("Energie des Zustands: ", ce9000(x))
+    y += 1
 
+# Create a figure and a 3D subplot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
+# Function to update the scatter plot for each frame
+def update(num, e, scatters):
+    ax.clear()
+    x, y, z = np.where(e[num] == 1)
+    scatters[0] = ax.scatter(x, y, z, color='b', label='Spin 1')
+    x, y, z = np.where(e[num] == -1)
+    scatters[1] = ax.scatter(x, y, z, color='r', label='Spin -1')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.legend()
 
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+# Create an empty list for the scatter plots
+scatters = [None, None]
 
-# x, y, z = np.where(spins == 1)
-# ax.scatter(x, y, z, color='b', label='Spin 1')
+# Create the animation
+ani = FuncAnimation(fig, update, frames=len(e), fargs=(e, scatters))
 
-# x, y, z = np.where(spins == -1)
-# ax.scatter(x, y, z, color='r', label='Spin -1')
+# Save the animation as an mp4 file
+ani.save('animation.mp4', writer='ffmpeg', fps=2)
 
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Z')
-# plt.legend()
-# plt.show()
+plt.show()
