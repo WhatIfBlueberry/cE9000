@@ -1,13 +1,11 @@
 import numpy as np
+import animate
 
-matrix_size = 3
+from tqdm import tqdm
+from time import sleep
+matrix_size = 15
 
 # init A (array of 3d matrices)
-A = []
-for _ in range(10):
-    A.append(np.random.choice([1, -1], size=(matrix_size, matrix_size, matrix_size)))
+for i in tqdm(range(0, 10), desc ="Progress: "):
+    sleep(.4)
 
-print(len(A))
-
-for i in range (10):
-    print(i)
