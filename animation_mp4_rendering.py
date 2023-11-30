@@ -26,9 +26,9 @@ def plot_matrix(matrix, ax):
         for j in range(matrix_size):
             for k in range(matrix_size):
                 if matrix[i, j, k] == 1:
-                    ax.scatter(i, j, k, c='b', marker='o')
+                    ax.scatter(i, j, k, c='b', marker='o', alpha=0.5)
                 else:
-                    ax.scatter(i, j, k, c='r', marker='o')
+                    ax.scatter(i, j, k, c='r', marker='o', alpha=0.5)
 
 with writer.saving(fig, "matrix_animation.mp4", 100):
     for i in range(10):

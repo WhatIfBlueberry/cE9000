@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FFMpegWriter
 
 # global array of spin states. Used for visualization at the end
 e = []
@@ -47,11 +46,11 @@ def mkCoolingScheduleLin(T0,K,iter):
 
 #################
 
-size = 3
+size = 50
 spins = initialize_model(size)
 print("Energie des Anfangszustands: ", ce9000(spins))
 
-iter = int(1000) # Anz. Iterationen
+iter = int(10000) # Anz. Iterationen
 T0 = 7         # Starttemperatur
 K = 100         # Kettenlänge
 
@@ -93,29 +92,28 @@ for x in e:
     print("Energie des Zustands: ", ce9000(x))
     y += 1
 
-# Create a figure and a 3D subplot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+plt.rcParams['animation.ffmpeg_path']='C:\\Users\\Test\\Downloads\\ffmpeg-master-latest-win64-gpl\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe'
 
-# Function to update the scatter plot for each frame
-def update(num, e, scatters):
+metadata = dict(title='Ising-Model', artist='Dylan & Eva')
+writer = FFMpegWriter(fps=2, metadata=metadata)  # fps is the speed of the animation
+
+fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
+
+plt.xlim(0, size)
+plt.ylim(0, size)
+
+def plot_matrix(matrix, ax):
     ax.clear()
-    x, y, z = np.where(e[num] == 1)
-    scatters[0] = ax.scatter(x, y, z, color='b', label='Spin 1')
-    x, y, z = np.where(e[num] == -1)
-    scatters[1] = ax.scatter(x, y, z, color='r', label='Spin -1')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    plt.legend()
+    ax.set_zlim(0, size)
+    for i in range(size):
+        for j in range(size):
+            for k in range(size):
+                if matrix[i, j, k] == 1:
+                    ax.scatter(i, j, k, c='b', marker='o', alpha=0.5)
+                else:
+                    ax.scatter(i, j, k, c='r', marker='o', alpha=0.5)
 
-# Create an empty list for the scatter plots
-scatters = [None, None]
-
-# Create the animation
-ani = FuncAnimation(fig, update, frames=len(e), fargs=(e, scatters))
-
-# Save the animation as an mp4 file
-ani.save('animation.mp4', writer='ffmpeg', fps=2)
-
-plt.show()
+with writer.saving(fig, "matrix_animation.mp4", 100):
+    for i in range(len(e)):
+        plot_matrix(e[i], ax)
+        writer.grab_frame()
