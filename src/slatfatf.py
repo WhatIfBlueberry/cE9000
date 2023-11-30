@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import animate
 from matplotlib.animation import FFMpegWriter
 from tqdm import tqdm
+import energy
 import os
 
 optimizationLog = [] #  array of spin states. Used for visualization at the end
@@ -16,7 +17,7 @@ T0 = 7 # Starting temperature
 
 def main(visual=False):
     spins = initialize_model(SIZE)
-    E[0] = ce9000(spins) # Initial Energy
+    E[0] = energy.ce9000(spins) # Initial Energy
     printInitialEnergy(spins)
 
     T = mkCoolingScheduleLin(T0,TEMPERATURE_LADDER,ITERATIONS)
@@ -28,7 +29,7 @@ def main(visual=False):
     for k in tqdm(range(0, ITERATIONS), desc ="Progress: "):
         x,y,z = xrand[k],yrand[k], zrand[k]
         p = prand[k]
-        dE = deltaE(x,y,z, spins)
+        dE = energy.deltaE(x,y,z, spins)
         apply_simulated_annealing_step(spins, T, x, y, z, dE, k, p)
         storeOptimizationLog(spins, k)
 
@@ -58,28 +59,6 @@ def apply_simulated_annealing_step(spins, T, x, y, z, dE, k, p):
 def initialize_model(n):
     return np.random.choice([1, -1], size=(n, n, n))
 
-def ce9000(spins, interactionDistance=1):
-    energy = 0
-    for i in range(SIZE):
-        for j in range(SIZE):
-            for k in range(SIZE):
-                energy += energyOfSpinAtPos(i, j, k, spins, interactionDistance)
-    return energy
-
-def energyOfSpinAtPos(i, j, k, spins, interactionDistance=1):
-    spin = spins[i,j,k]
-    neighbors_sum = (
-        spins[(i+interactionDistance) % SIZE,j,k] +
-        spins[(i-interactionDistance+SIZE) % SIZE,j,k] +
-        spins[i,(j+interactionDistance) % SIZE,k] +
-        spins[i,(j-interactionDistance+SIZE) % SIZE,k] +
-        spins[i,j,(k+interactionDistance) % SIZE] +
-        spins[i,j,(k-interactionDistance+SIZE) % SIZE])
-    return (-1) * spin * neighbors_sum
-
-def deltaE(i, j, k, spins, interactionDistance=1):
-    return -2 * energyOfSpinAtPos(i, j, k, spins, interactionDistance=1)
-
 
 def mkCoolingScheduleLin(T0,K,iter):
     T = np.ones(iter)*T0
@@ -91,10 +70,10 @@ def mkCoolingScheduleLin(T0,K,iter):
     return T
 
 def printInitialEnergy(spins):
-    print("Energy before optimization: ", ce9000(spins))
+    print("Energy before optimization: ", energy.ce9000(spins))
 
 def printFinalEnergy(spins):
-    print("Energy after optimization: ", ce9000(spins))
+    print("Energy after optimization: ", energy.ce9000(spins))
 
 def generateRandomIntegers(ITERATIONS):
     return np.random.randint(0,SIZE,[ITERATIONS]).astype(int)
