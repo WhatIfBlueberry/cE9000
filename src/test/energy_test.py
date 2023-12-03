@@ -14,7 +14,7 @@ class TestEnergy(unittest.TestCase):
         self.interactionDistance = 1
 
     def test_ce9000(self):
-        result = energy.ce9000(self.spins, self.interactionDistance)
+        result = energy.calculateSystemEnergy(self.spins, self.interactionDistance)
         self.assertEqual(result, 54)
 
     def test_energyOfSpinAtPos(self):

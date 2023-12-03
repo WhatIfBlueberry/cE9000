@@ -7,8 +7,7 @@ from matplotlib.animation import FuncAnimation
 
 plt.rcParams['animation.ffmpeg_path']='C:\\Users\\Test\\Downloads\\ffmpeg-master-latest-win64-gpl\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe'
 plt.style.use('dark_background')
-#fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
-fig, ax = plt.subplots(figsize=(20, 20), subplot_kw=dict(projection='3d'))
+fig, ax = plt.subplots(figsize=(20, 20), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
 ax.view_init(25,135)
 ax.set_axis_off()
 ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
