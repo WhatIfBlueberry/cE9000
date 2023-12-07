@@ -6,7 +6,8 @@ In this 3D simulation, we extend the traditional 2D Ising Model into three dimen
 ## Installation
 
 Follow these steps to set up and run the project locally.
-1. Clone the Repository
+1. Clone the Repository using
+
 HTTPS:
 ```bash
     git clone https://github.com/WhatIfBlueberry/cE9000.git
