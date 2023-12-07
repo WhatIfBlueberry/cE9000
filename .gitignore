@@ -1,0 +1,2 @@
+#ignore test pycache
+/src/test/__pycache__
