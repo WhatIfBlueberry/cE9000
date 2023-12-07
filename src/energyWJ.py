@@ -22,8 +22,6 @@
 
 import numpy as np
 import math
-
-J0 = 1
 # find the neighbors of a particle
 #   center as particle
 #   matrix as matrix
@@ -43,7 +41,7 @@ def find_neighbors(center, matrix, distance):
     center['neighbors'] = neighbors
 
 # get the energy of the whole system (matrix, distance)
-def energy_of_system(matrix):
+def energy_of_system(matrix, J0):
     energy = 0
     for x in range(len(matrix)):
         for y in range(len(matrix[0])):

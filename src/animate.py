@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def create_animation(optimizationLog):
-    plt.rcParams['animation.ffmpeg_path']='C:\\Users\\Test\\Downloads\\ffmpeg-master-latest-win64-gpl\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe'
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(20, 20), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
     ax.view_init(25,135)

@@ -7,23 +7,26 @@ import energyWJ
 import os
 from dotenv import load_dotenv
 
+# Load environment variables from config.env
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'config.env')
 load_dotenv(dotenv_path)
 
+# Model Parameters read from config.env
 VISUAL = os.getenv("VISUAL") #  if true, the animation will be shown at the end
 SIZE = int(os.getenv("SIZE")) # model dimensions: size x size x size
 ITERATIONS = int(os.getenv("ITERATIONS")) # Amount of iterations
 TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER")) # Amount of steps until temperature is lowered
 INTERACTION_DISTANCE = int(os.getenv("INTERACTION_DISTANCE")) # Distance of interaction
 T0 = int(os.getenv("T0")) # Starting temperature
+J0 = int(os.getenv("J0")) # Interaction strength
 ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES")) #  counter for optimizationLog
 
-E = np.zeros([ITERATIONS]) # Array of energy value
+E = np.zeros([ITERATIONS]) # Array of energy values
 optimizationLog = [] #  array of spin states. Used for visualization at the end
 
 def main():
     particleMatrix = initialize_model()
-    E[0] = energyWJ.energy_of_system(particleMatrix) # Initial Energy
+    E[0] = energyWJ.energy_of_system(particleMatrix, J0) # Initial Energy
     printInitialEnergy(particleMatrix)
 
     T = mkCoolingScheduleLin(T0,TEMPERATURE_LADDER,ITERATIONS)
@@ -83,10 +86,10 @@ def mkCoolingScheduleLin(T0,K,iter):
     return T
 
 def printInitialEnergy(spins):
-    print("Energy before optimization: ", energyWJ.energy_of_system(spins))
+    print("Energy before optimization: ", energyWJ.energy_of_system(spins, J0))
 
 def printFinalEnergy(spins):
-    print("Energy after optimization: ", energyWJ.energy_of_system(spins))
+    print("Energy after optimization: ", energyWJ.energy_of_system(spins, J0))
 
 def generateRandomIntegers(ITERATIONS):
     return np.random.randint(0,SIZE,[ITERATIONS])

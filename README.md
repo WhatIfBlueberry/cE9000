@@ -21,8 +21,9 @@ SSH:
 ```bash
     pip install -r requirements.txt
 ```
-4. Configure any necessary settings or environment variables in the config.env file
-5. Run the Application (be sure you are in the src directory, or change the path accordingly)
+4. (optional) If you want to enable the 3D ScatterPlot animation, you need to install FFmpeg and add it to PATH: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+5. Configure any necessary settings or environment variables in the config.env file
+6. Run the Application (be sure you are in the src directory, or change the path accordingly)
 ```bash
     python slatfatf.py
 ```
