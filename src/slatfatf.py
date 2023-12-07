@@ -5,17 +5,21 @@ from matplotlib.animation import FFMpegWriter
 from tqdm import tqdm
 import energyWJ
 import os
+from dotenv import load_dotenv
 
-optimizationLog = [] #  array of spin states. Used for visualization at the end
-animationFrames = 4 #  counter for optimizationLog
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'config.env')
+load_dotenv(dotenv_path)
 
-VISUAL= True #  if true, the animation will be shown at the end
-SIZE = 30 # model dimensions: size x size x size
-ITERATIONS = int(100000) # Amount of iterations
-TEMPERATURE_LADDER = 100 # Amount of steps until temperature is lowered
-INTERACTION_DISTANCE = 3 # Distance of interaction
+VISUAL = os.getenv("VISUAL") #  if true, the animation will be shown at the end
+SIZE = int(os.getenv("SIZE")) # model dimensions: size x size x size
+ITERATIONS = int(os.getenv("ITERATIONS")) # Amount of iterations
+TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER")) # Amount of steps until temperature is lowered
+INTERACTION_DISTANCE = int(os.getenv("INTERACTION_DISTANCE")) # Distance of interaction
+T0 = int(os.getenv("T0")) # Starting temperature
+ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES")) #  counter for optimizationLog
+
 E = np.zeros([ITERATIONS]) # Array of energy value
-T0 = 7 # Starting temperature
+optimizationLog = [] #  array of spin states. Used for visualization at the end
 
 def main():
     particleMatrix = initialize_model()
@@ -46,7 +50,7 @@ def optional_visualization():
 
 # Stores a sample of the spin states for visualization purposes
 def storeOptimizationLog(particleMatrix, k):
-    if (k % (ITERATIONS / animationFrames) == 0):
+    if (k % (ITERATIONS / ANIMATION_FRAMES) == 0):
         optimizationLog.append(particleMatrix.copy())
 
 
