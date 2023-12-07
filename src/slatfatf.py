@@ -3,23 +3,23 @@ import matplotlib.pyplot as plt
 import animate
 from matplotlib.animation import FFMpegWriter
 from tqdm import tqdm
-import energyWithJulien
+import energyWJ
 import os
 
 optimizationLog = [] #  array of spin states. Used for visualization at the end
 animationFrames = 4 #  counter for optimizationLog
 
 VISUAL= True #  if true, the animation will be shown at the end
-SIZE = 2 # model dimensions: size x size x size
+SIZE = 30 # model dimensions: size x size x size
 ITERATIONS = int(100000) # Amount of iterations
 TEMPERATURE_LADDER = 100 # Amount of steps until temperature is lowered
-INTERACTION_DISTANCE = 1 # Distance of interaction
+INTERACTION_DISTANCE = 3 # Distance of interaction
 E = np.zeros([ITERATIONS]) # Array of energy value
 T0 = 7 # Starting temperature
 
 def main():
     particleMatrix = initialize_model()
-    E[0] = energyWithJulien.energy_of_system(particleMatrix) # Initial Energy
+    E[0] = energyWJ.energy_of_system(particleMatrix) # Initial Energy
     printInitialEnergy(particleMatrix)
 
     T = mkCoolingScheduleLin(T0,TEMPERATURE_LADDER,ITERATIONS)
@@ -31,7 +31,7 @@ def main():
     for k in tqdm(range(0, ITERATIONS), desc ="Progress: "): # Iterate while also showing fancy progress bar
         x,y,z = xrand[k],yrand[k], zrand[k] # Coordinates of random spin to be flipped
         p = prand[k]
-        dE = energyWithJulien.get_delta_energy_of_particle(particleMatrix[x][y][z])
+        dE = energyWJ.get_delta_energy_of_particle(particleMatrix[x][y][z])
         apply_simulated_annealing_step(particleMatrix[x][y][z], dE, T,  k, p)
         storeOptimizationLog(particleMatrix, k)
 
@@ -65,7 +65,7 @@ def initialize_model():
    for x in range(SIZE):
        for y in range(SIZE):
            for z in range(SIZE):
-               energyWithJulien.find_neighbors(matrix[x][y][z], matrix, INTERACTION_DISTANCE)
+               energyWJ.find_neighbors(matrix[x][y][z], matrix, INTERACTION_DISTANCE)
    return matrix
     #return np.random.choice([1, -1], size=(n, n, n))
 
@@ -79,10 +79,10 @@ def mkCoolingScheduleLin(T0,K,iter):
     return T
 
 def printInitialEnergy(spins):
-    print("Energy before optimization: ", energyWithJulien.energy_of_system(spins))
+    print("Energy before optimization: ", energyWJ.energy_of_system(spins))
 
 def printFinalEnergy(spins):
-    print("Energy after optimization: ", energyWithJulien.energy_of_system(spins))
+    print("Energy after optimization: ", energyWJ.energy_of_system(spins))
 
 def generateRandomIntegers(ITERATIONS):
     return np.random.randint(0,SIZE,[ITERATIONS])

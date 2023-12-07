@@ -4,8 +4,30 @@ let matrixSize = 7;
 let matrix = [];
 distance = 3;
 
+let layer = 0; // global variable
+let btnPrev, btnNext;
+
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
+    btnPrev = createButton('←');
+    btnNext = createButton('→');
+    btnPrev.size(50, 30); // width, height
+    btnNext.size(50, 30); // width, height
+    btnPrev.position(width / 2 - 30, 30);
+    btnNext.position(width / 2 + 30, 30);
+
+    // handle button click events
+    btnPrev.mousePressed(() => {
+        if (layer < matrixSize - 1) {
+            layer++;
+        }
+    });
+    btnNext.mousePressed(() => {
+        if (layer > 0) {
+            layer--;
+        }
+    });
+
     scaleFactor = width / max / 2;
     strokeWeight(0);
     fillMatrix();
@@ -25,7 +47,7 @@ function fillMatrix() {
         let row = [];
         for (let y = -Math.floor(matrixSize / 2); y < matrixSize; y++) {
             let column = [];
-            for (let z = 0; z < matrixSize; z++) {
+            for (let z = -Math.floor(matrixSize / 2); z < matrixSize; z++) {
                 if (x == 0 && y == 0 && z == 0) {
                     column.push("center");
                 } else if (x * x + y * y + z * z <= distance * distance) {
@@ -47,7 +69,7 @@ function printMatrix() {
             for (let z = 0; z < matrixSize; z++) {
                 push();
                 translate(i, j, z);
-                if (z == 3) {
+                if (z == layer) {
                     if (matrix[i][j][z] == "inside") {
                         fill(0, 0, 255, (alpha = 200));
                         box(0.75);

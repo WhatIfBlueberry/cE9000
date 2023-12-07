@@ -32,20 +32,20 @@ def create_animation(optimizationLog):
                     elif item['spin'] == -1:
                         negativeIndex[i].append((i, j, k))
 
-    for i in range(len(optimizationLog)):
-        positiveIndex[i] = np.array(positiveIndex[i])
-        negativeIndex[i] = np.array(negativeIndex[i])
-    positiveIndex_np = np.array(positiveIndex)
-    negativeIndex_np = np.array(negativeIndex)
+    # Assuming positiveIndex and negativeIndex are defined somewhere above
+    optimizationLogList = [(np.array(positiveIndex[i]), np.array(negativeIndex[i])) for i in range(len(positiveIndex))]
 
-    pos = ax.scatter(positiveIndex_np[:,0], positiveIndex_np[:,1], positiveIndex_np[:,2], c='b', marker='o')
-    neg = ax.scatter(negativeIndex_np[:,0], negativeIndex_np[:,1], negativeIndex_np[:,2], c='r', marker='o')
+    fig, ax = plt.subplots()
 
-    def animate(i, indPos, indNeg):
-        pos._offsets3d = (indPos[i][:,0],indPos[i][:,1],indPos[i][:,2])
-        neg._offsets3d = (indNeg[i][:,0],indNeg[i][:,1],indNeg[i][:,2])
+    pos = ax.scatter([], [], [], c='b', marker='o')
+    neg = ax.scatter([], [], [], c='r', marker='o')
+
+    def animate(i, optimizationLogList):
+        pos._offsets3d = (optimizationLogList[i][0][:,0], optimizationLogList[i][0][:,1], optimizationLogList[i][0][:,2])
+        neg._offsets3d = (optimizationLogList[i][1][:,0], optimizationLogList[i][1][:,1], optimizationLogList[i][1][:,2])
         return pos, neg
 
-    anim = FuncAnimation(fig, animate, frames=len(optimizationLog), interval=200, fargs=(positiveIndex, negativeIndex), blit=True, repeat=False)
+    anim = FuncAnimation(fig, animate, frames=len(optimizationLogList), interval=200, fargs=(optimizationLogList,), blit=True, repeat=False)
+
     writervideo = animation.FFMpegWriter(fps =10, bitrate =80)
     anim.save("../out/optimizationLog_animation.mp4")
