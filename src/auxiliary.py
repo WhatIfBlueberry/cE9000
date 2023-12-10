@@ -40,7 +40,7 @@ def setupOutDir(VISUAL, LOG):
     return new_directory_path
 
 def algorithmLog(logger, currentTemp, E, k, accepted, p, tempBasedProbability):
-    logger.info(f"Current Temperature: {currentTemp:.2f}     Previous Energy: {E[k-1]:<10}  Current Energy: {E[k]:<10} Iteration: {k:<7}  dE:  {E[k]-E[k-1]:<7} p: {p:.2e}   expProb: {tempBasedProbability:.2e} {'ACCEPTED' if accepted else ''}")
+    logger.info(f"Current Temperature: {currentTemp:<7.2f} Previous Energy: {E[k-1]:<10.2f} Current Energy: {E[k]:<10.2f} Iteration: {k:<7} dE: {E[k]-E[k-1]:<10.2f} p: {p:<10.2e} expProb: {tempBasedProbability:<10.2e} {'ACCEPTED' if accepted else ''}")
 
 # Stores a sample of the spin states for visualization purposes
 def storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k):
