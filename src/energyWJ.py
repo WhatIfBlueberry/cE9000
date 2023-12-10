@@ -41,29 +41,29 @@ def find_neighbors(center, matrix, distance):
     center['neighbors'] = neighbors
 
 # get the energy of the whole system (matrix, distance)
-def energy_of_system(matrix, J0):
+def systemEnergy(matrix, J0):
     energy = 0
     for x in range(len(matrix)):
         for y in range(len(matrix[0])):
             for z in range(len(matrix[0][0])):
                 particle = matrix[x][y][z]
                 if particle is not None:
-                    energy += J0 * get_energy_of_particle(particle)
+                    energy += J0 * get_energy_of_particle(particle, J0)
     return energy
 
 
-def get_delta_energy_of_particle(particle):
+def deltaEnergyOfParticle(particle, J0):
     # energy of the particle if it would flip. Times 2 because
-    return -2 * get_energy_of_particle(particle)
+    return -2 * get_energy_of_particle(particle, J0)
 
 # get the energy of a single particle (particle, distance)
-def get_energy_of_particle(particle):
+def get_energy_of_particle(particle, J0):
     neighbors = particle['neighbors']
     sum = 0
     for neighbor in neighbors:
         # TODO 1 as constant, might be -1
-        sum += neighbor['spin'] * (1 / distanceToParticle(particle, neighbor))
-    return particle['spin'] * sum
+        sum += (neighbor['spin'] * (1 / distanceToParticle(particle, neighbor)))
+    return -J0 * particle['spin'] * sum
 
 def distanceToParticle(particle1, particle2):
     return math.sqrt((particle1['x'] - particle2['x'])**2 + (particle1['y'] - particle2['y'])**2 + (particle1['z'] - particle2['z'])**2)

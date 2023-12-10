@@ -1,75 +1,69 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import animate
 from matplotlib.animation import FFMpegWriter
 from tqdm import tqdm
-import energyWJ
 import os
 from dotenv import load_dotenv
+## import own modules
+import energyWJ
+import temperature
+import auxiliary
+import animate
 
 # Load environment variables from config.env
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'config.env')
 load_dotenv(dotenv_path)
 
 # Model Parameters read from config.env
-VISUAL = os.getenv("VISUAL") #  if true, the animation will be shown at the end
-SIZE = int(os.getenv("SIZE")) # model dimensions: size x size x size
-ITERATIONS = int(os.getenv("ITERATIONS")) # Amount of iterations
-TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER")) # Amount of steps until temperature is lowered
-INTERACTION_DISTANCE = int(os.getenv("INTERACTION_DISTANCE")) # Distance of interaction
-T0 = int(os.getenv("T0")) # Starting temperature
-J0 = int(os.getenv("J0")) # Interaction strength
-ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES")) #  counter for optimizationLog
+VISUAL = bool(os.getenv("VISUAL").lower() == "true")            # if true, the animation will be shown at the end
+SIZE = int(os.getenv("SIZE"))                                   # model dimensions: size x size x size
+ITERATIONS = int(os.getenv("ITERATIONS"))                       # Amount of iterations
+INTERACTION_DISTANCE = int(os.getenv("INTERACTION_DISTANCE"))   # Distance of interaction
+J0 = int(os.getenv("J0"))                                       # Interaction strength
+T0 = float(os.getenv("T0"))                                     # Starting temperature
+TEMP_PROFILE = os.getenv("TEMP_PROFILE")                        # Temperature profile  (lin, bilin, exp)
+TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER"))       # Amount of steps until temperature is lowered
+ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES"))           # counter for optimizationLog
 
-E = np.zeros([ITERATIONS]) # Array of energy values
-optimizationLog = [] #  array of spin states. Used for visualization at the end
+E = np.zeros([ITERATIONS])  # Array of energy values
+optimizationLog = []        # Array of spin states. Used for visualization at the end
 
 def main():
-    particleMatrix, spinMatrix = initialize_model()
-    E[0] = energyWJ.energy_of_system(particleMatrix, J0) # Initial Energy
-    printInitialEnergy(particleMatrix)
+    # First Matrix knows about its neighbors, second only about its own spin
+    particleMatrix, spinMatrix = init()
+    E[0] = energyWJ.systemEnergy(particleMatrix, J0)
+    T = temperature.temperatureProfile(TEMP_PROFILE, T0, TEMPERATURE_LADDER, ITERATIONS)
 
-    T = mkCoolingScheduleLin(T0,TEMPERATURE_LADDER,ITERATIONS)
+    auxiliary.printInitialEnergy(E)
 
-    xrand, yrand, zrand = generateRandomCoordinates(ITERATIONS) # Coordinates of random spins to be flipped
-    prand = generateRandomIntegers(ITERATIONS) # Random number for probability calculation
-
+    xrand, yrand, zrand = auxiliary.generateRandomCoordinates(ITERATIONS, SIZE) # Coordinates of random spins to be flipped
+    prand = auxiliary.generateRandomIntegers(ITERATIONS, SIZE) # Random number for probability calculation
 
     for k in tqdm(range(0, ITERATIONS), desc ="Progress: "): # Iterate while also showing fancy progress bar
-        x,y,z = xrand[k],yrand[k], zrand[k] # Coordinates of random spin to be flipped
+        x,y,z = xrand[k], yrand[k], zrand[k] # Coordinates of random spin to be flipped
         p = prand[k]
-        dE = energyWJ.get_delta_energy_of_particle(particleMatrix[x][y][z])
-        apply_simulated_annealing_step(particleMatrix, spinMatrix, x, y, z, dE, T,  k, p)
-        storeOptimizationLog(spinMatrix, k)
+        dE = energyWJ.deltaEnergyOfParticle(particleMatrix[x][y][z], J0)
+        applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T,  k, p)
+        auxiliary.storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k)
 
-    printFinalEnergy(particleMatrix)
-    optional_visualization()
+    auxiliary.printFinalEnergy(E)
+    animate.optionalVisualization(VISUAL, optimizationLog)
 
-# If VISUAL is true, the animation will be shown at the end
-def optional_visualization():
-    if VISUAL:
-        animate.create_animation(optimizationLog)
-        os.system("start ../out/scatter.mp4")
-
-# Stores a sample of the spin states for visualization purposes
-def storeOptimizationLog(spinMatrix, k):
-    if (k % (ITERATIONS / ANIMATION_FRAMES) == 0):
-        optimizationLog.append(spinMatrix.copy())
-
-
-def apply_simulated_annealing_step(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
+def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
     particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0
     currentTemp = T[k]
+    accepted = False
     if deltaSmaller or (currentTemp > 0 and p < np.exp(-dE / T[k])):
+        accepted = True
         particle['spin'] = (-1) * particle['spin']
         spinMatrix[x][y][z] = (-1) * spinMatrix[x][y][z]
         E[k] = E[k-1] + dE
     else:
         E[k] = E[k-1]
+    auxiliary.printLog(k, currentTemp, accepted, E)
 
-
-def initialize_model():
+def init():
    matrix = [[[{'x': x, 'y': y, 'z': z, 'spin': np.random.choice([1, -1])} for z in range(SIZE)] for y in range(SIZE)] for x in range(SIZE)]
    spin_matrix = np.array([[[item['spin'] for item in row] for row in layer] for layer in matrix])
    for x in range(SIZE):
@@ -77,32 +71,8 @@ def initialize_model():
            for z in range(SIZE):
                energyWJ.find_neighbors(matrix[x][y][z], matrix, INTERACTION_DISTANCE)
    return matrix, spin_matrix
-    #return np.random.choice([1, -1], size=(n, n, n))
 
-def mkCoolingScheduleLin(T0,K,iter):
-    T = np.ones(iter)*T0
-    dT = T0/(iter/K)
-    for k in np.arange(2,iter):
-        T[k] = T[k-1]
-        if k%K == 0:
-            T[k] -= dT
-    return T
-
-def printInitialEnergy(spins):
-    print("Energy before optimization: ", energyWJ.energy_of_system(spins, J0))
-
-def printFinalEnergy(spins):
-    print("Energy after optimization: ", energyWJ.energy_of_system(spins, J0))
-
-def generateRandomIntegers(ITERATIONS):
-    return np.random.randint(0,SIZE,[ITERATIONS])
-
-def generateRandomCoordinates(ITERATIONS):
-    x = generateRandomIntegers(ITERATIONS)
-    y = generateRandomIntegers(ITERATIONS)
-    z = generateRandomIntegers(ITERATIONS)
-    return x,y,z
-
+### RUN!! ###
 
 main()
 

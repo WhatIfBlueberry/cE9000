@@ -3,9 +3,15 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
+import os
 
+# If VISUAL is true, the animation will be shown at the end
+def optionalVisualization(VISUAL, optimizationLog):
+    if VISUAL:
+        create(optimizationLog)
+        os.system("start ../out/scatter.mp4")
 
-def create_animation(optimizationLog):
+def create(optimizationLog):
     logging.basicConfig(filename='..\out\scatter.log', encoding='utf-8', level=logging.INFO)
 
     plt.style.use('dark_background')
