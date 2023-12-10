@@ -4,17 +4,45 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import auxiliary
+import webbrowser
+
+import sys
+import time
+import threading
 
 logger = None
+# Create a threading event to signal when the task is done
+done_flag = None
+
 # If VISUAL is true, the animation will be shown at the end
-def optionalVisualization(VISUAL, optimizationLog, LOG):
+def optionalVisualization(VISUAL, optimizationLog, outDir, LOG):
     if VISUAL:
         global logger
-        logger = auxiliary.setupLogger('second_logger', '../out/scatterLog.txt', LOG)
-        create(optimizationLog)
-        os.system("start ../out/scatter.mp4")
+        logger = auxiliary.setupLogger('second_logger', "scatterLog",  outDir, LOG)
 
-def create(optimizationLog):
+        animationPath = os.path.join(outDir, "scatter.mp4")
+
+        global done_flag
+        done_flag = threading.Event()
+        spinner_thread = threading.Thread(target=loading_spinner)
+        spinner_thread.start()
+
+        try:
+            create(optimizationLog, animationPath)
+        finally:
+            done_flag.set()
+            spinner_thread.join()
+            sys.stdout.write("\r")
+            sys.stdout.flush()
+            print("Animation complete!")
+            user_input = input("Do you wish to open it now? (Y/N): ").strip().lower()
+            if user_input == "y":
+                print("Done!")
+                webbrowser.open(animationPath)
+            else:
+                print("Goodbye!")
+
+def create(optimizationLog, animationPath):
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(25, 25), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
     ax.view_init(25,135)
@@ -44,7 +72,7 @@ def create(optimizationLog):
 
     anim = FuncAnimation(fig, animate, frames=optimizationLog_size, interval=200, fargs=(indPos, indNeg, pos, neg), blit=True, repeat=False)
     writervideo = animation.FFMpegWriter(fps = 1, bitrate =80)
-    anim.save("..\out\scatter.mp4")
+    anim.save(animationPath)
 
 def animate(i, indPos, indNeg, pos, neg):
         pos._offsets3d = (indPos[i][:,0],indPos[i][:,1],indPos[i][:,2])
@@ -55,3 +83,12 @@ def freezeLastFrame(optimizationLog):
     for _ in range(0, 10):
         lastFrame = optimizationLog[-1]
         optimizationLog.append(lastFrame)
+
+def loading_spinner():
+    chars = ["-", "\\", "|", "/"]
+    i = 0
+    while not done_flag.is_set():
+        sys.stdout.write("\rPreparing Animation.. " + chars[i])
+        sys.stdout.flush()
+        time.sleep(0.1)
+        i = (i + 1) % len(chars)

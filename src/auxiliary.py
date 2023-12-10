@@ -1,17 +1,43 @@
 import numpy as np
 import logging
+from datetime import datetime
+import os
 
-def setupLogger(name, log_file, LOG, level=logging.INFO):
+def setupLogger(name, logName, outDir, LOG, level=logging.INFO):
     if not LOG:
         return None
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    handler = logging.FileHandler(log_file)
+    handler = logging.FileHandler(os.path.join(outDir, f"{logName}.txt"))
     handler.setFormatter(formatter)
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
 
     return logger
+
+def setupOutDir(VISUAL, LOG):
+    if not VISUAL and not LOG:
+        return None
+    current_date = datetime.now()
+    day = current_date.day
+    month = current_date.month
+    year = current_date.year
+
+    base_directory = "..\out"
+
+    folder_name = f"Sim${day:02d}${month:02d}${year}$"
+    new_directory_path = os.path.join(base_directory, folder_name)
+
+    # Check if the directory already exists, and create it with a counter if needed
+    counter = 1
+    while os.path.exists(new_directory_path):
+        folder_name = f"Sim{day:02d}{month:02d}{year}-{counter}"
+        new_directory_path = os.path.join(base_directory, folder_name)
+        counter += 1
+
+    os.makedirs(new_directory_path)
+
+    return new_directory_path
 
 def algorithmLog(logger, currentTemp, E, k, accepted, p, tempBasedProbability):
     logger.info(f"Current Temperature: {currentTemp:.2f}     Previous Energy: {E[k-1]:<10}  Current Energy: {E[k]:<10} Iteration: {k:<7}  dE:  {E[k]-E[k-1]:<7} p: {p:.2e}   expProb: {tempBasedProbability:.2e} {'ACCEPTED' if accepted else ''}")

@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FFMpegWriter
 from tqdm import tqdm
 import os
 from dotenv import load_dotenv
@@ -38,7 +36,8 @@ def main():
     T = temperature.temperatureProfile(TEMP_PROFILE, T0, TEMPERATURE_LADDER, ITERATIONS)
 
     global logger
-    logger = auxiliary.setupLogger('first_logger', '../out/algorithmLog.txt', LOG)
+    outDir = auxiliary.setupOutDir(VISUAL, LOG)
+    logger = auxiliary.setupLogger('first_logger', "algorithmLog", outDir, LOG)
 
     auxiliary.printInitialEnergy(E)
 
@@ -53,7 +52,7 @@ def main():
         auxiliary.storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k)
 
     auxiliary.printFinalEnergy(E)
-    animate.optionalVisualization(VISUAL, optimizationLog, LOG)
+    animate.optionalVisualization(VISUAL, optimizationLog, outDir, LOG)
 
 def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
     particle = particleMatrix[x][y][z]
