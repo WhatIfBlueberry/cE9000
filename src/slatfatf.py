@@ -52,14 +52,14 @@ def main():
         auxiliary.storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k)
 
     auxiliary.printFinalEnergy(E)
-    animate.optionalVisualization(VISUAL, optimizationLog, outDir, LOG)
+    animate.optionalVisualization(VISUAL, optimizationLog, outDir, SIZE, LOG)
 
 def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
     particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0
     currentTemp = T[k]
     accepted = False
-    tempBasedProbability = np.exp(-dE / T[k])
+    tempBasedProbability = auxiliary.tempBasedProbability(dE, currentTemp)
     if deltaSmaller or (currentTemp > 0 and p < tempBasedProbability):
         accepted = True
         particle['spin'] = (-1) * particle['spin']

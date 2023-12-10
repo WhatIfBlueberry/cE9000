@@ -15,7 +15,7 @@ logger = None
 done_flag = None
 
 # If VISUAL is true, the animation will be shown at the end
-def optionalVisualization(VISUAL, optimizationLog, outDir, LOG):
+def optionalVisualization(VISUAL, optimizationLog, outDir, SIZE, LOG):
     if VISUAL:
         global logger
         logger = auxiliary.setupLogger('second_logger', "scatterLog",  outDir, LOG)
@@ -28,7 +28,7 @@ def optionalVisualization(VISUAL, optimizationLog, outDir, LOG):
         spinner_thread.start()
 
         try:
-            create(optimizationLog, animationPath)
+            create(optimizationLog, animationPath, SIZE)
         finally:
             done_flag.set()
             spinner_thread.join()
@@ -42,7 +42,7 @@ def optionalVisualization(VISUAL, optimizationLog, outDir, LOG):
             else:
                 print("Goodbye!")
 
-def create(optimizationLog, animationPath):
+def create(optimizationLog, animationPath, SIZE):
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(25, 25), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
     ax.view_init(25,135)
@@ -57,8 +57,8 @@ def create(optimizationLog, animationPath):
     freezeLastFrame(optimizationLog)
     optimizationLog_size = len(optimizationLog)
 
-    plt.xlim(0, optimizationLog_size)
-    plt.ylim(0, optimizationLog_size)
+    plt.xlim(0, SIZE)
+    plt.ylim(0, SIZE)
 
     indPos = []
     indNeg = []
@@ -71,7 +71,7 @@ def create(optimizationLog, animationPath):
     neg = ax.scatter(indNeg[0][:,0],indNeg[0][:,1],indNeg[0][:,2], c='r', marker='o')
 
     anim = FuncAnimation(fig, animate, frames=optimizationLog_size, interval=200, fargs=(indPos, indNeg, pos, neg), blit=True, repeat=False)
-    writervideo = animation.FFMpegWriter(fps = 1, bitrate =80)
+    animation.FFMpegWriter(fps = 1, bitrate =80)
     anim.save(animationPath)
 
 def animate(i, indPos, indNeg, pos, neg):

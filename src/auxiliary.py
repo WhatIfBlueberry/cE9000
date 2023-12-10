@@ -23,9 +23,9 @@ def setupOutDir(VISUAL, LOG):
     month = current_date.month
     year = current_date.year
 
-    base_directory = "..\out"
+    base_directory = "out"
 
-    folder_name = f"Sim${day:02d}${month:02d}${year}$"
+    folder_name = f"Sim{day:02d}{month:02d}{year}"
     new_directory_path = os.path.join(base_directory, folder_name)
 
     # Check if the directory already exists, and create it with a counter if needed
@@ -61,3 +61,10 @@ def printInitialEnergy(E):
 
 def printFinalEnergy(E):
     print("Energy after optimization: ", E[-1])
+
+# this is done to avoid overflow errors because the exponential function is too big
+# one is fine since it is the maximum probability
+def tempBasedProbability(dE, currentTemp):
+    if (-dE / currentTemp) > 1:
+        return 1
+    return np.exp(-dE / currentTemp)
