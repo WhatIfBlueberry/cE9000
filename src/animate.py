@@ -2,18 +2,19 @@ from matplotlib import animation
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
-import logging
 import os
+import auxiliary
 
+logger = None
 # If VISUAL is true, the animation will be shown at the end
-def optionalVisualization(VISUAL, optimizationLog):
+def optionalVisualization(VISUAL, optimizationLog, LOG):
     if VISUAL:
+        global logger
+        logger = auxiliary.setupLogger('second_logger', '../out/scatterLog.txt', LOG)
         create(optimizationLog)
         os.system("start ../out/scatter.mp4")
 
 def create(optimizationLog):
-    logging.basicConfig(filename='..\out\scatter.log', encoding='utf-8', level=logging.INFO)
-
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(25, 25), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
     ax.view_init(25,135)
@@ -24,6 +25,8 @@ def create(optimizationLog):
     ax.xaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
+
+    freezeLastFrame(optimizationLog)
     optimizationLog_size = len(optimizationLog)
 
     plt.xlim(0, optimizationLog_size)
@@ -34,7 +37,7 @@ def create(optimizationLog):
     for p in range(optimizationLog_size):
         indPos.append(np.argwhere(optimizationLog[p]==1))
         indNeg.append(np.argwhere(optimizationLog[p]==-1))
-        logging.info("Matrix Number " + str(p) + " has " + str(len(indPos[p])) + " positive and " + str(len(indNeg[p])) + " negative particles.")
+        logger.info("Matrix Number " + str(p) + " has " + str(len(indPos[p])) + " positive and " + str(len(indNeg[p])) + " negative particles.")
 
     pos = ax.scatter(indPos[0][:,0],indPos[0][:,1],indPos[0][:,2], c='b', marker='o')
     neg = ax.scatter(indNeg[0][:,0],indNeg[0][:,1],indNeg[0][:,2], c='r', marker='o')
@@ -47,3 +50,8 @@ def animate(i, indPos, indNeg, pos, neg):
         pos._offsets3d = (indPos[i][:,0],indPos[i][:,1],indPos[i][:,2])
         neg._offsets3d = (indNeg[i][:,0],indNeg[i][:,1],indNeg[i][:,2])
         return pos, neg
+
+def freezeLastFrame(optimizationLog):
+    for _ in range(0, 10):
+        lastFrame = optimizationLog[-1]
+        optimizationLog.append(lastFrame)

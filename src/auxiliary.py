@@ -1,11 +1,20 @@
 import numpy as np
+import logging
 
-#### AUXILIARY FUNCTIONS ####
+def setupLogger(name, log_file, LOG, level=logging.INFO):
+    if not LOG:
+        return None
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
 
-def printLog(k, currentTemp, accepted, E):
-    print(f"Current Temperature: {currentTemp:.2f} Current Energy: {E[k]:<10} Previous Energy: {E[k-1]:<10} Iteration: {k}", "accepted: ", "YES" if accepted else "")
+    return logger
 
-
+def algorithmLog(logger, currentTemp, E, k, accepted, p, tempBasedProbability):
+    logger.info(f"Current Temperature: {currentTemp:.2f}     Previous Energy: {E[k-1]:<10}  Current Energy: {E[k]:<10} Iteration: {k:<7}  dE:  {E[k]-E[k-1]:<7} p: {p:.2e}   expProb: {tempBasedProbability:.2e} {'ACCEPTED' if accepted else ''}")
 
 # Stores a sample of the spin states for visualization purposes
 def storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k):

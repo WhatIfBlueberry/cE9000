@@ -24,20 +24,26 @@ T0 = float(os.getenv("T0"))                                     # Starting tempe
 TEMP_PROFILE = os.getenv("TEMP_PROFILE")                        # Temperature profile  (lin, bilin, exp)
 TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER"))       # Amount of steps until temperature is lowered
 ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES"))           # counter for optimizationLog
+LOG = bool(os.getenv("LOG").lower() == "true")                  # if true, the log will be printed
 
 E = np.zeros([ITERATIONS])  # Array of energy values
 optimizationLog = []        # Array of spin states. Used for visualization at the end
+logger = None               # Logger for the log file
 
 def main():
-    # First Matrix knows about its neighbors, second only about its own spin
+    # In the first Matrix, every particle knows its own state and all its neighbors
+    # The second only contains the spin values for easier computation
     particleMatrix, spinMatrix = init()
     E[0] = energyWJ.systemEnergy(particleMatrix, J0)
     T = temperature.temperatureProfile(TEMP_PROFILE, T0, TEMPERATURE_LADDER, ITERATIONS)
 
+    global logger
+    logger = auxiliary.setupLogger('first_logger', '../out/algorithmLog.txt', LOG)
+
     auxiliary.printInitialEnergy(E)
 
     xrand, yrand, zrand = auxiliary.generateRandomCoordinates(ITERATIONS, SIZE) # Coordinates of random spins to be flipped
-    prand = auxiliary.generateRandomIntegers(ITERATIONS, SIZE) # Random number for probability calculation
+    prand = np.random.uniform(0,1,ITERATIONS) # Random number for probability calculation
 
     for k in tqdm(range(0, ITERATIONS), desc ="Progress: "): # Iterate while also showing fancy progress bar
         x,y,z = xrand[k], yrand[k], zrand[k] # Coordinates of random spin to be flipped
@@ -47,21 +53,23 @@ def main():
         auxiliary.storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k)
 
     auxiliary.printFinalEnergy(E)
-    animate.optionalVisualization(VISUAL, optimizationLog)
+    animate.optionalVisualization(VISUAL, optimizationLog, LOG)
 
 def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
     particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0
     currentTemp = T[k]
     accepted = False
-    if deltaSmaller or (currentTemp > 0 and p < np.exp(-dE / T[k])):
+    tempBasedProbability = np.exp(-dE / T[k])
+    if deltaSmaller or (currentTemp > 0 and p < tempBasedProbability):
         accepted = True
         particle['spin'] = (-1) * particle['spin']
         spinMatrix[x][y][z] = (-1) * spinMatrix[x][y][z]
         E[k] = E[k-1] + dE
     else:
         E[k] = E[k-1]
-    auxiliary.printLog(k, currentTemp, accepted, E)
+    if LOG:
+        auxiliary.algorithmLog(logger, currentTemp, E, k, accepted, p, tempBasedProbability)
 
 def init():
    matrix = [[[{'x': x, 'y': y, 'z': z, 'spin': np.random.choice([1, -1])} for z in range(SIZE)] for y in range(SIZE)] for x in range(SIZE)]
