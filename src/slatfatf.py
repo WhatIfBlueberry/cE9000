@@ -25,7 +25,7 @@ E = np.zeros([ITERATIONS]) # Array of energy values
 optimizationLog = [] #  array of spin states. Used for visualization at the end
 
 def main():
-    particleMatrix = initialize_model()
+    particleMatrix, spinMatrix = initialize_model()
     E[0] = energyWJ.energy_of_system(particleMatrix, J0) # Initial Energy
     printInitialEnergy(particleMatrix)
 
@@ -39,8 +39,8 @@ def main():
         x,y,z = xrand[k],yrand[k], zrand[k] # Coordinates of random spin to be flipped
         p = prand[k]
         dE = energyWJ.get_delta_energy_of_particle(particleMatrix[x][y][z])
-        apply_simulated_annealing_step(particleMatrix[x][y][z], dE, T,  k, p)
-        storeOptimizationLog(particleMatrix, k)
+        apply_simulated_annealing_step(particleMatrix, spinMatrix, x, y, z, dE, T,  k, p)
+        storeOptimizationLog(spinMatrix, k)
 
     printFinalEnergy(particleMatrix)
     optional_visualization()
@@ -49,19 +49,21 @@ def main():
 def optional_visualization():
     if VISUAL:
         animate.create_animation(optimizationLog)
-        os.system("start ../out/matrix_animation.mp4")
+        os.system("start ../out/scatter.mp4")
 
 # Stores a sample of the spin states for visualization purposes
-def storeOptimizationLog(particleMatrix, k):
+def storeOptimizationLog(spinMatrix, k):
     if (k % (ITERATIONS / ANIMATION_FRAMES) == 0):
-        optimizationLog.append(particleMatrix.copy())
+        optimizationLog.append(spinMatrix.copy())
 
 
-def apply_simulated_annealing_step(particle, dE, T, k, p):
+def apply_simulated_annealing_step(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
+    particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0
     currentTemp = T[k]
     if deltaSmaller or (currentTemp > 0 and p < np.exp(-dE / T[k])):
         particle['spin'] = (-1) * particle['spin']
+        spinMatrix[x][y][z] = (-1) * spinMatrix[x][y][z]
         E[k] = E[k-1] + dE
     else:
         E[k] = E[k-1]
@@ -69,11 +71,12 @@ def apply_simulated_annealing_step(particle, dE, T, k, p):
 
 def initialize_model():
    matrix = [[[{'x': x, 'y': y, 'z': z, 'spin': np.random.choice([1, -1])} for z in range(SIZE)] for y in range(SIZE)] for x in range(SIZE)]
+   spin_matrix = np.array([[[item['spin'] for item in row] for row in layer] for layer in matrix])
    for x in range(SIZE):
        for y in range(SIZE):
            for z in range(SIZE):
                energyWJ.find_neighbors(matrix[x][y][z], matrix, INTERACTION_DISTANCE)
-   return matrix
+   return matrix, spin_matrix
     #return np.random.choice([1, -1], size=(n, n, n))
 
 def mkCoolingScheduleLin(T0,K,iter):

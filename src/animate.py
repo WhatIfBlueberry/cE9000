@@ -2,10 +2,14 @@ from matplotlib import animation
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
+import logging
+
 
 def create_animation(optimizationLog):
+    logging.basicConfig(filename='..\out\scatter.log', encoding='utf-8', level=logging.INFO)
+
     plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(20, 20), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
+    fig, ax = plt.subplots(figsize=(25, 25), subplot_kw=dict(projection='3d')) # size of the figure and making it 3d
     ax.view_init(25,135)
     ax.set_axis_off()
     ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -14,37 +18,26 @@ def create_animation(optimizationLog):
     ax.xaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
-    optimizationLog_size = len(optimizationLog[0][0])
+    optimizationLog_size = len(optimizationLog)
 
     plt.xlim(0, optimizationLog_size)
     plt.ylim(0, optimizationLog_size)
 
-    positiveIndex = [[] for _ in range(len(optimizationLog))]
-    negativeIndex = [[] for _ in range(len(optimizationLog))]
+    indPos = []
+    indNeg = []
+    for p in range(optimizationLog_size):
+        indPos.append(np.argwhere(optimizationLog[p]==1))
+        indNeg.append(np.argwhere(optimizationLog[p]==-1))
+        logging.info("Matrix Number " + str(p) + " has " + str(len(indPos[p])) + " positive and " + str(len(indNeg[p])) + " negative particles.")
 
-    for i, outer_list in enumerate(optimizationLog):
-        for j, inner_list in enumerate(outer_list):
-            for k, item_list in enumerate(inner_list):
-                for o, item in enumerate(item_list):
-                    if item['spin'] == 1:
-                        positiveIndex[i].append((i, j, k))
-                    elif item['spin'] == -1:
-                        negativeIndex[i].append((i, j, k))
+    pos = ax.scatter(indPos[0][:,0],indPos[0][:,1],indPos[0][:,2], c='b', marker='o')
+    neg = ax.scatter(indNeg[0][:,0],indNeg[0][:,1],indNeg[0][:,2], c='r', marker='o')
 
-    # Assuming positiveIndex and negativeIndex are defined somewhere above
-    optimizationLogList = [(np.array(positiveIndex[i]), np.array(negativeIndex[i])) for i in range(len(positiveIndex))]
+    anim = FuncAnimation(fig, animate, frames=optimizationLog_size, interval=200, fargs=(indPos, indNeg, pos, neg), blit=True, repeat=False)
+    writervideo = animation.FFMpegWriter(fps = 1, bitrate =80)
+    anim.save("..\out\scatter.mp4")
 
-    fig, ax = plt.subplots()
-
-    pos = ax.scatter([], [], [], c='b', marker='o')
-    neg = ax.scatter([], [], [], c='r', marker='o')
-
-    def animate(i, optimizationLogList):
-        pos._offsets3d = (optimizationLogList[i][0][:,0], optimizationLogList[i][0][:,1], optimizationLogList[i][0][:,2])
-        neg._offsets3d = (optimizationLogList[i][1][:,0], optimizationLogList[i][1][:,1], optimizationLogList[i][1][:,2])
+def animate(i, indPos, indNeg, pos, neg):
+        pos._offsets3d = (indPos[i][:,0],indPos[i][:,1],indPos[i][:,2])
+        neg._offsets3d = (indNeg[i][:,0],indNeg[i][:,1],indNeg[i][:,2])
         return pos, neg
-
-    anim = FuncAnimation(fig, animate, frames=len(optimizationLogList), interval=200, fargs=(optimizationLogList,), blit=True, repeat=False)
-
-    writervideo = animation.FFMpegWriter(fps =10, bitrate =80)
-    anim.save("../out/optimizationLog_animation.mp4")
