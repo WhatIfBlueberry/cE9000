@@ -23,7 +23,7 @@ def setupOutDir(VISUAL, LOG):
     month = current_date.month
     year = current_date.year
 
-    base_directory = "out"
+    base_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..",  "out")
 
     folder_name = f"Sim{day:02d}{month:02d}{year}"
     new_directory_path = os.path.join(base_directory, folder_name)
