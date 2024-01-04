@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def temperatureProfile(TEMP_PROFILE, T0, TEMPERATURE_LADDER, ITERATIONS):
     if TEMP_PROFILE == "lin":
         return mkCoolingScheduleLin(T0,TEMPERATURE_LADDER,ITERATIONS)
