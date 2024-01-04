@@ -3,8 +3,8 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import subprocess, platform
 import auxiliary
-import webbrowser
 
 import sys
 import time
@@ -38,7 +38,12 @@ def optionalVisualization(VISUAL, optimizationLog, outDir, SIZE, LOG):
             user_input = input("Do you wish to open it now? (Y/N): ").strip().lower()
             if user_input == "y":
                 print("Done!")
-                webbrowser.open(animationPath)
+                if platform.system() == 'Darwin':       # macOS
+                    subprocess.call(('open', animationPath))
+                elif platform.system() == 'Windows':    # Windows
+                    os.startfile(animationPath)
+                else:                                   # linux variants
+                    subprocess.call(('xdg-open', animationPath))
             else:
                 print("Goodbye!")
 
