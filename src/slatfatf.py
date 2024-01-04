@@ -21,7 +21,7 @@ SIZE = int(os.getenv("SIZE"))                                   # model dimensio
 ITERATIONS = int(os.getenv("ITERATIONS"))                       # Amount of iterations
 INTERACTION_DISTANCE = int(os.getenv("INTERACTION_DISTANCE"))   # Distance of interaction
 J0 = int(os.getenv("J0"))                                       # Interaction strength
-T0 = float(os.getenv("T0"))                                     # Starting temperature                       
+T0 = float(os.getenv("T0"))                                     # Starting temperature
 TEMP_PROFILE = os.getenv("TEMP_PROFILE")                        # Temperature profile  (lin, bilin, exp)
 TEMPERATURE_LADDER = int(os.getenv("TEMPERATURE_LADDER"))       # Amount of steps until temperature is lowered
 ANIMATION_FRAMES = int(os.getenv("ANIMATION_FRAMES"))           # counter for optimizationLog
@@ -74,29 +74,7 @@ def main():
     auxiliary.printFinalEnergy(E)
     animate.optionalVisualization(VISUAL, optimizationLog, outDir, SIZE, LOG)
 
-    # Linear Temperature Schedule
-    start_time_linear = time.time()  # Start measuring the execution time for linear schedule
-    T_linear = temperature.temperatureProfile("lin", T0, TEMPERATURE_LADDER, ITERATIONS)
-    end_time_linear = time.time()  # Stop measuring the execution time for linear schedule
-    execution_time_linear = end_time_linear - start_time_linear
 
-    # Bilinear Temperature Schedule
-    start_time_bilinear = time.time()  # Start measuring the execution time for bilinear schedule
-    T_bilinear = temperature.temperatureProfile("bilin", T0, TEMPERATURE_LADDER, ITERATIONS)
-    end_time_bilinear = time.time()  # Stop measuring the execution time for bilinear schedule
-    execution_time_bilinear = end_time_bilinear - start_time_bilinear
-
-    # Exponential Temperature Schedule
-    start_time_exponential = time.time()  # Start measuring the execution time for exponential schedule
-    T_exponential = temperature.temperatureProfile("exp", T0, TEMPERATURE_LADDER, ITERATIONS)
-    end_time_exponential = time.time()  # Stop measuring the execution time for exponential schedule
-    execution_time_exponential = end_time_exponential - start_time_exponential
-
-    # Print the execution times
-    print(f"Execution time for linear temperature schedule: {execution_time_linear} seconds")
-    print(f"Execution time for bilinear temperature schedule: {execution_time_bilinear} seconds")
-    print(f"Execution time for exponential temperature schedule: {execution_time_exponential} seconds")
-   
 def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p, var):
     particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0

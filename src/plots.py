@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from slatfatf import T0
 import temperature
-from IPython import display
 import time
 
 def plotFigures(s,k,T,E,var, x,y,z):
@@ -18,7 +17,7 @@ def plotFigures(s,k,T,E,var, x,y,z):
     # Multiplot
     plt.clf()
     plt.suptitle(f"k={k}, T={T[k]:.2f}, E={E[k]:.0f}")
-    
+
     # First plot shows spins
     ax1 = plt.subplot2grid((2, 2), (0, 0), projection = '3d')
     ax1.scatter(x, y, z, c=s, s=10, cmap='bwr')
@@ -55,7 +54,6 @@ def plotFigures(s,k,T,E,var, x,y,z):
     ax4.set_ylim(min(T),max(T))
 
 
-    
     plt.draw()
     plt.pause(0.001)
     plt.clf()

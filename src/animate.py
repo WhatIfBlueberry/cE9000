@@ -72,8 +72,8 @@ def create(optimizationLog, animationPath, SIZE):
         indNeg.append(np.argwhere(optimizationLog[p]==-1))
         logger.info("Matrix Number " + str(p) + " has " + str(len(indPos[p])) + " positive and " + str(len(indNeg[p])) + " negative particles.")
 
-    pos = ax.scatter(indPos[0][:,0],indPos[0][:,1],indPos[0][:,2], c='b', marker='o')
-    neg = ax.scatter(indNeg[0][:,0],indNeg[0][:,1],indNeg[0][:,2], c='r', marker='o')
+    pos = ax.scatter(indPos[0][:,0],indPos[0][:,1],indPos[0][:,2], c='b', marker='o', s=113)
+    neg = ax.scatter(indNeg[0][:,0],indNeg[0][:,1],indNeg[0][:,2], c='r', marker='o', s=113)
 
     anim = FuncAnimation(fig, animate, frames=optimizationLog_size, interval=200, fargs=(indPos, indNeg, pos, neg), blit=True, repeat=False)
     animation.FFMpegWriter(fps = 1, bitrate =80)
