@@ -4,7 +4,27 @@ from slatfatf import T0
 import temperature
 import time
 
-def plotFigures(s,k,T,E,var, x,y,z):
+global x, y, z
+
+def defineInitValues(SIZE):
+    global x, y, z
+    x=np.zeros((SIZE,SIZE,SIZE))
+    y=np.zeros((SIZE,SIZE,SIZE))
+    z=np.zeros((SIZE,SIZE,SIZE))
+    for i in np.arange(SIZE):
+        for _ in np.arange(SIZE):
+            x[i,:,:]=i
+            y[:,i,:]=i
+            z[:,:,i]=i
+
+
+def plotFigures(s,k,T,E,var, ITERATIONS, SIZE, plotSteps=25):
+    global x, y, z
+    if not (k % (ITERATIONS // plotSteps) == 0 or k == ITERATIONS - 1):
+        return # Only plot every plotSteps iterations
+
+    if (k == 0):
+        defineInitValues(SIZE)
     # Calculation of susceptibility
     # (as a moving average)
     #x = particleMatrix[:][0][0]

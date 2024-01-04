@@ -30,28 +30,18 @@ LOG = bool(os.getenv("LOG").lower() == "true")                  # if true, the l
 E = np.zeros([ITERATIONS])  # Array of energy values
 optimizationLog = []        # Array of spin states. Used for visualization at the end
 logger = None               # Logger for the log file
-VAR = np.zeros([ITERATIONS])  # Initialization for the variance
-plotSteps=20
+var = np.zeros([ITERATIONS])  # Initialization for the variance
+
 
 def main():
     # In the first Matrix, every particle knows its own state and all its neighbors
     # The second only contains the spin values for easier computation
     particleMatrix, spinMatrix = init()
-    var = VAR
-
-    # Hilfsgroessen für Scatter-Plot
-    _x=np.zeros((SIZE,SIZE,SIZE))
-    _y=np.zeros((SIZE,SIZE,SIZE))
-    _z=np.zeros((SIZE,SIZE,SIZE))
-    for i in np.arange(SIZE):
-        for j in np.arange(SIZE):
-            _x[i,:,:]=i
-            _y[:,i,:]=i
-            _z[:,:,i]=i
     E[0] = energyWJ.systemEnergy(particleMatrix, J0)
     T = temperature.temperatureProfile(TEMP_PROFILE, T0, TEMPERATURE_LADDER, ITERATIONS)
 
     global logger
+    global var
     outDir = auxiliary.setupOutDir(VISUAL, LOG)
     logger = auxiliary.setupLogger('first_logger', "algorithmLog", outDir, LOG)
 
@@ -64,18 +54,16 @@ def main():
         x,y,z = xrand[k], yrand[k], zrand[k] # Coordinates of random spin to be flipped
         p = prand[k]
         dE = energyWJ.deltaEnergyOfParticle(particleMatrix[x][y][z], J0)
-        var = applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T,  k, p, var)
+        applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T,  k, p)
         auxiliary.storeOptimizationLog(ITERATIONS, ANIMATION_FRAMES, optimizationLog, spinMatrix, k)
-         # Output intermediate information
-        if k%(ITERATIONS//plotSteps)==0 or k==ITERATIONS-1:
-            #plotFigures(s,k,T,E,var)
-            plots.plotFigures(spinMatrix, k, T, E, var, _x,_y,_z)
+        plots.plotFigures(spinMatrix, k, T, E, var, ITERATIONS, SIZE)
 
     auxiliary.printFinalEnergy(E)
     animate.optionalVisualization(VISUAL, optimizationLog, outDir, SIZE, LOG)
 
 
-def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p, var):
+def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p):
+    global var
     particle = particleMatrix[x][y][z]
     deltaSmaller = dE < 0
     currentTemp = T[k]
@@ -86,13 +74,11 @@ def applySimulatedAnnealingStep(particleMatrix, spinMatrix, x, y, z, dE, T, k, p
         particle['spin'] = (-1) * particle['spin']
         spinMatrix[x][y][z] = (-1) * spinMatrix[x][y][z]
         E[k] = E[k-1] + dE
-        # Calculation of the variance
         var[k] = dE**2 / T[k]**2
     else:
         E[k] = E[k-1]
     if LOG:
         auxiliary.algorithmLog(logger, currentTemp, E, k, accepted, p, tempBasedProbability)
-    return var
 
 def init():
    matrix = [[[{'x': x, 'y': y, 'z': z, 'spin': np.random.choice([1, -1])} for z in range(SIZE)] for y in range(SIZE)] for x in range(SIZE)]
