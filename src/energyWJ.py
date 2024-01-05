@@ -53,7 +53,7 @@ def systemEnergy(matrix, J0):
 
 
 def deltaEnergyOfParticle(particle, J0):
-    # energy of the particle if it would flip. Times 2 because
+    # energy of the particle if it would flip.
     return -2 * get_energy_of_particle(particle, J0)
 
 # get the energy of a single particle (particle, distance)
@@ -61,8 +61,7 @@ def get_energy_of_particle(particle, J0):
     neighbors = particle['neighbors']
     sum = 0
     for neighbor in neighbors:
-        # TODO 1 as constant, might be -1
-        sum += (neighbor['spin'] * (1 / distanceToParticle(particle, neighbor)))
+        sum += (neighbor['spin'] * (1 / (distanceToParticle(particle, neighbor))**2))
     return -J0 * particle['spin'] * sum
 
 def distanceToParticle(particle1, particle2):
